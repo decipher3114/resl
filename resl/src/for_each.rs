@@ -4,11 +4,12 @@ use winnow::{
 };
 
 use crate::{
-    EvalState, Expr, FmtState, StatefulInput, Value,
+    Expr, StatefulInput, Value,
     binding::Binding,
     context::Context,
     ident::Ident,
     macros::{exp_char, exp_desc},
+    state::{EvalState, FmtState},
     utils::delimited_multispace0,
     value::{ValueList, ValueMap},
 };
