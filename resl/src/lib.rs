@@ -90,7 +90,7 @@ pub use error::ParseError;
 pub use expr::Expr;
 pub use value::Value;
 
-pub use crate::state::{CtxState, EvalState, FmtState};
+pub use crate::state::{CtxState, EvalState, FmtState, ParseState};
 
 // use crate::{
 //     expression::Expression,
