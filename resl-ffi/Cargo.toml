@@ -1,0 +1,20 @@
+[package]
+name = "resl-ffi"
+version = "0.1.0"
+edition = "2024"
+description = "C FFI bindings for RESL - Runtime Evaluated Serialization Language"
+homepage = "https://decipher3114.github.io/resl"
+repository = "https://github.com/decipher3114/resl"
+license = "Apache-2.0 OR MIT"
+keywords = ["bindings", "c", "configuration", "ffi", "resl"]
+categories = ["config", "external-ffi-bindings"]
+
+[lib]
+crate-type = ["cdylib"]
+name = "libresl"
+
+[dependencies]
+resl = { path = "../resl", version = "0.1.0", features = ["preserve-order"] }
+
+[build-dependencies]
+cbindgen = "0.29.0"

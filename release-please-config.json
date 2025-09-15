@@ -1,0 +1,14 @@
+{
+    "release-type": "rust",
+    "packages": {
+        "resl": {},
+        "resl-cli": {},
+        "resl-ffi": {}
+    },
+    "plugins": [
+        "cargo-workspace"
+    ],
+    "include-v-in-tag": true,
+    "include-component-in-tag": true,
+    "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
+}

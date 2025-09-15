@@ -1,0 +1,26 @@
+[workspace]
+resolver = "3"
+members = ["resl", "resl-cli", "resl-ffi"]
+
+[workspace.package]
+edition = "2024"
+homepage = "https://decipher3114.github.io/resl"
+repository = "https://github.com/decipher3114/resl"
+license = "Apache-2.0 OR MIT"
+
+[profile.dev]
+opt-level = 0
+debug = false
+overflow-checks = true
+panic = "unwind"
+incremental = true
+codegen-units = 256
+
+[profile.release]
+opt-level = 3
+strip = "symbols"
+overflow-checks = false
+lto = true
+panic = "abort"
+codegen-units = 1
+

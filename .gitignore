@@ -1,0 +1,15 @@
+# Rust
+/target
+
+# IDE
+.vscode/
+.zed/
+
+# Documentation build
+docs/dist/
+docs/.vitepress/cache/
+docs/node_modules/
+
+# Temporary files
+*.tmp
+*.bak

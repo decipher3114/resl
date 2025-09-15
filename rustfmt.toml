@@ -1,0 +1,6 @@
+edition = "2024"
+group_imports = "StdExternalCrate"
+imports_granularity = "Crate"
+format_strings = true
+reorder_impl_items = true
+style_edition = "2024"

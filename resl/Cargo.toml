@@ -1,0 +1,22 @@
+[package]
+name = "resl"
+version = "0.1.0"
+edition = "2024"
+description = "Runtime Evaluated Serialization Language: A modern configuration and serialization language with variables, expressions, and dynamic runtime evaluation"
+documentation = "https://docs.rs/resl"
+homepage = "https://decipher3114.github.io/resl"
+repository = "https://github.com/decipher3114/resl"
+license = "Apache-2.0 OR MIT"
+keywords = ["config", "configuration", "language", "parser", "serialization"]
+categories = ["config", "parsing"]
+
+[dependencies]
+concat-string = "1.0.1"
+indexmap = { version = "2.11.1", features = ["serde"] }
+serde = { version = "1.0.224", features = ["serde_derive"] }
+string-interner = "0.19.0"
+winnow = "0.7.13"
+
+[features]
+default = []
+preserve-order = []

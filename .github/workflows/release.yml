@@ -1,0 +1,156 @@
+name: Release
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-assets:
+    name: Upload assets
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+          - target: aarch64-pc-windows-msvc
+            os: windows-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Upload CLI binary
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: resl
+          package: resl-cli
+          target: ${{ matrix.target }}
+          archive: resl-${{ needs.release-please.outputs.tag_name }}-$target
+          tar: unix
+          zip: windows
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+
+      - name: Build FFI library
+        run: cargo build --release --package resl-ffi --target ${{ matrix.target }}
+
+      - name: Create FFI package structure
+        shell: bash
+        run: |
+          mkdir -p dist/ffi/lib
+          mkdir -p dist/ffi/include
+
+      - name: Copy FFI library files (Linux)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: |
+          cp target/${{ matrix.target }}/release/liblibresl.so dist/ffi/lib/libresl.so
+          cp target/${{ matrix.target }}/release/liblibresl.a dist/ffi/lib/libresl.a || true
+
+      - name: Copy FFI library files (Windows)
+        if: contains(matrix.target, 'windows')
+        shell: bash
+        run: |
+          cp target/${{ matrix.target }}/release/libresl.dll dist/ffi/lib/ || true
+          cp target/${{ matrix.target }}/release/libresl.dll.lib dist/ffi/lib/libresl.lib || true
+          cp target/${{ matrix.target }}/release/libresl.dll.exp dist/ffi/lib/ || true
+
+      - name: Copy FFI library files (macOS)
+        if: contains(matrix.target, 'apple')
+        run: |
+          cp target/${{ matrix.target }}/release/liblibresl.dylib dist/ffi/lib/libresl.dylib
+          cp target/${{ matrix.target }}/release/liblibresl.a dist/ffi/lib/libresl.a || true
+
+      - name: Copy headers
+        run: |
+          cp include/resl.h dist/ffi/include/
+
+      - name: Create FFI archive
+        shell: bash
+        run: |
+          cd dist/ffi
+          if [[ "${{ matrix.target }}" == *"windows"* ]]; then
+            zip -r ../../libresl-${{ needs.release-please.outputs.tag_name }}-${{ matrix.target }}.zip .
+          else
+            tar -czf ../../libresl-${{ needs.release-please.outputs.tag_name }}-${{ matrix.target }}.tar.gz .
+          fi
+
+      - name: Upload FFI archive
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: |
+            libresl-${{ needs.release-please.outputs.tag_name }}-${{ matrix.target }}.*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-crates:
+    name: Publish to crates.io
+    needs: [release-please, upload-assets]
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Publish resl to crates.io
+        run: cargo publish --package resl --no-verify || echo "resl already published or failed to publish"
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Wait before publishing resl-cli
+        run: sleep 60
+
+      - name: Publish resl-cli to crates.io
+        run: cargo publish --package resl-cli --no-verify || echo "resl-cli already published or failed to publish"
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  publish-docs:
+    name: Trigger documentation publish
+    needs: [release-please, upload-assets, publish-crates]
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh workflow run publish-docs.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
