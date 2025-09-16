@@ -318,7 +318,3 @@ Transform collections using the `>` operator with `(index, element) : expression
     ["scaling": scaling_configs]
 }
 ```
-
-## ➡️ Next Steps
-
-You've now mastered all core RESL syntax! Check out the [CLI Usage](../usage/cli-usage) guide to learn how to work with RESL files from the command line, or explore [Language Bindings](../usage/bindings) to integrate RESL into your applications.

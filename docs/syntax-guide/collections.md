@@ -280,7 +280,3 @@ See [Control Flow](control-flow) for complete documentation with examples.
     ["databases": database_configs]
 }
 ```
-
-## ➡️ Next Steps
-
-Now that you understand collections, learn about [Operations](operations) to see how to combine and transform values using RESL's operators.

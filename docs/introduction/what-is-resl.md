@@ -21,7 +21,7 @@ RESL is designed to bring programming capabilities to config files, eliminating 
 
 - **🔄 Dynamic Configuration**: Variables, functions, and computed values
 - **📝 Familiar Syntax**: Combines the best of JSON, JavaScript, and functional programming
-- **🏗️ Flexible Structure**: Any expression can be top-level, not just objects
+- **🏗️ Flexible Structure**: Any expression can be top-level
 - **📊 Rich Data Types**: Strings, numbers, booleans, lists, and maps
 - **⚡ Powerful Operations**: Binary operations, conditionals, transformations, and more
 
@@ -34,6 +34,14 @@ RESL is ideal for:
 - **Dynamic Configurations**: Environment-specific settings, computed values, conditional logic
 - **Data Generation**: Test data, mock configurations, templated content
 - **API Responses**: Dynamic JSON generation with computed fields
+
+## 🔍 How is RESL Different from a Programming Language?
+
+- Programming languages offer extensive capabilities, often beyond what is needed for configuration.
+- RESL is intentionally restrictive, focusing solely on configuration and serialization tasks.
+- RESL files store data in a structured yet flexible format, designed for clarity and simplicity.
+- During runtime evaluation, RESL processes and computes the data to produce the desired output.
+- This design minimizes the risk of arbitrary code execution, ensuring safer and more predictable behavior.
 
 ## 💡 Philosophy
 

@@ -235,7 +235,3 @@ Use the `type_of()` built-in function to check types:
     ["timeout": timeout]
 }
 ```
-
-## ➡️ Next Steps
-
-Now that you understand literals, learn about [Collections](collections) to see how to organize multiple values using lists and maps.

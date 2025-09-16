@@ -357,7 +357,3 @@ Prints the value to stdout and returns the value unchanged. Useful for debugging
     ["auth": auth_env, "api": api_env]
 }
 ```
-
-## ➡️ Next Steps
-
-Now that you understand functions, learn about [Control Flow](control-flow) to master conditional expressions and collection transformations.

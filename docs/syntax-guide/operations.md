@@ -281,7 +281,3 @@ RESL follows standard mathematical precedence rules:
     ["num_add": num_add, "str_add": str_add, "same_type": same_type]
 }
 ```
-
-## ➡️ Next Steps
-
-Now that you understand operations, learn about [Functions](functions) to see how to create reusable code blocks and use RESL's built-in functions.

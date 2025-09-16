@@ -21,7 +21,7 @@ RESL addresses the fundamental limitations of traditional configuration formats 
 
 **RESL Solutions:**
 
-JSON: Repetitive and verbose
+**Step 1:** RESL can replicate JSON exactly as-is
 
 ```json
 {
@@ -32,7 +32,32 @@ JSON: Repetitive and verbose
 }
 ```
 
-RESL: Variables and computed values
+```resl
+[
+    "services": [
+        [ "name": "auth", "image": "app/auth:v1.2.0", "port": 8080 ],
+        [ "name": "api", "image": "app/api:v1.2.0", "port": 8081 ]
+    ]
+]
+```
+
+**Step 2:** Then enhance with variables to eliminate repetition
+
+```resl
+{
+    version = "v1.2.0";
+    base_port = 8080;
+
+    [
+        "services": [
+            [ "name": "auth", "image": concat("app/auth:", version), "port": base_port ],
+            [ "name": "api", "image": concat("app/api:", version), "port": base_port + 1 ]
+        ]
+    ]
+}
+```
+
+**Step 3:** Add computed values and loops for ultimate flexibility
 
 ```resl
 {
@@ -40,11 +65,13 @@ RESL: Variables and computed values
     base_port = 8080;
     services = ["auth", "api"];
 
-    ["services": services > (i, name): [
-        "name": name,
-        "image": concat("app/", name, ":", version),
-        "port": base_port + i
-    ]]
+    [
+        "services": services > (i, name): [
+            "name": name,
+            "image": concat("app/", name, ":", version),
+            "port": base_port + i
+        ]
+    ]
 }
 ```
 
@@ -86,17 +113,17 @@ RESL: Variables and computed values
 
 Variables and computed values eliminate repetition, typically reducing config file sizes by 30-50% compared to JSON.
 
-**Before (JSON - 156 characters):**
+**Step 1: Direct JSON equivalent (RESL - 156 characters):**
 
-```json
-{
-  "db": { "host": "localhost", "port": 5432 },
-  "cache": { "host": "localhost", "port": 6379 },
+```resl
+[
+  "db": [ "host": "localhost", "port": 5432 ],
+  "cache": ["host": "localhost", "port": 6379 ],
   "url": "http://localhost:8080"
-}
+]
 ```
 
-**After (RESL - 98 characters):**
+**Step 2: Enhanced with variables (RESL - 98 characters):**
 
 ```resl
 {host="localhost";["db":["host":host,"port":5432],"cache":["host":host,"port":6379],"url":concat("http://",host,":8080")]}

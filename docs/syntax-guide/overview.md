@@ -39,6 +39,6 @@ RESL intentionally excludes comment syntax to maintain smaller file sizes and en
 }
 ```
 
-RESL supports all essential configuration needs: numbers, strings, booleans, null values, lists, maps, arithmetic operations, comparisons, conditionals, functions, and transformations.
+RESL supports all essential configuration needs: blocks with scoped variables, numbers, strings, booleans, null values, lists, maps, arithmetic operations, comparisons, conditionals, functions, and transformations.
 
 For comprehensive guidelines on writing clean configurations, see our [Best Practices](best-practices) guide.

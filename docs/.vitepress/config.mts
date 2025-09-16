@@ -24,6 +24,7 @@ export default defineConfig({
                 items: [
                     { text: "Overview", link: "/syntax-guide/overview" },
                     { text: "Literals", link: "/syntax-guide/literals" },
+                    { text: "Blocks", link: "/syntax-guide/blocks" },
                     { text: "Collections", link: "/syntax-guide/collections" },
                     { text: "Operations", link: "/syntax-guide/operations" },
                     { text: "Functions", link: "/syntax-guide/functions" },
