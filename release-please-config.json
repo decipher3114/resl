@@ -2,6 +2,7 @@
     "release-type": "rust",
     "include-v-in-tag": true,
     "include-component-in-tag": false,
+    "group-pull-request-title-pattern": "chore: release ${version}",
     "packages": {
         "resl": {
             "component": "resl"
