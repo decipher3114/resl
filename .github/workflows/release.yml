@@ -50,7 +50,7 @@ jobs:
       SUFFIX: ${{ needs.release-please.outputs.tag_name }}-${{ matrix.target }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install Rust toolchain
@@ -141,10 +141,10 @@ jobs:
   publish-crates:
     name: Publish Crates
     needs: [release-please, release-assets]
-    if: ${{ needs.release-please.outputs.release_created }}
+    if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install Rust toolchain
@@ -167,10 +167,10 @@ jobs:
 
   publish-docs:
     name: Publish Documentation
-    needs: [release-please, release-assets, publish-crates]
-    if: ${{ needs.release-please.outputs.release_created }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: gh workflow run publish-docs.yml
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    if: needs.release-please.outputs.release_created == 'true'
+    needs: [release-please, release-assets]
+    uses: decipher3114/resl/.github/workflows/publish-docs.yml@main
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

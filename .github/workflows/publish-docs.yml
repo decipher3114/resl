@@ -1,6 +1,8 @@
 name: Publish Doc
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
