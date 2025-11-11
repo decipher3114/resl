@@ -16,16 +16,16 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+      release_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.resl--tag_name }}
     steps:
       - name: Run release-please
         id: release
         uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_PLEASE_PAT }}
 
-  upload-assets:
+  release-assets:
     name: Upload assets
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created }}
@@ -45,20 +45,14 @@ jobs:
             os: macos-latest
 
     runs-on: ${{ matrix.os }}
+    env:
+      TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
+      TARGET: ${{ matrix.target }}
+      FFI_DIR: dist/ffi
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Upload CLI binary
-        uses: taiki-e/upload-rust-binary-action@v1
-        with:
-          bin: resl
-          package: resl-cli
-          target: ${{ matrix.target }}
-          archive: resl-${{ needs.release-please.outputs.tag_name }}-$target
-          tar: unix
-          zip: windows
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -66,61 +60,88 @@ jobs:
           toolchain: stable
           target: ${{ matrix.target }}
 
+      - name: Build CLI binary
+        run: cargo build --release --package resl-cli --target $TARGET
+
+      - name: Copy CLI binary (Linux/macOS)
+        if: contains(env.TARGET, 'windows') == false
+        shell: bash
+        run: |
+          mkdir -p dist/cli
+          cp target/$TARGET/release/resl dist/cli/resl-${TAG_NAME}-${TARGET}
+
+      - name: Copy CLI binary (Windows)
+        if: contains(env.TARGET, 'windows')
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist\cli | Out-Null
+          Copy-Item "target\$env:TARGET\release\resl.exe" "dist\cli\resl-$env:TAG_NAME-$env:TARGET.exe" -Force
+
       - name: Build FFI library
-        run: cargo build --release --package resl-ffi --target ${{ matrix.target }}
+        run: cargo build --release --package resl-ffi --target $TARGET
 
-      - name: Create FFI package structure
+      - name: Create FFI package structure (Linux/macOS)
+        if: contains(env.TARGET, 'windows') == false
         shell: bash
         run: |
-          mkdir -p dist/ffi/lib
-          mkdir -p dist/ffi/include
+          mkdir -p $FFI_DIR/lib $FFI_DIR/include
+          cp include/resl.h $FFI_DIR/include/
 
-      - name: Copy FFI library files (Linux)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
+      - name: Create FFI package structure (Windows)
+        if: contains(env.TARGET, 'windows')
+        shell: pwsh
         run: |
-          cp target/${{ matrix.target }}/release/liblibresl.so dist/ffi/lib/libresl.so
-          cp target/${{ matrix.target }}/release/liblibresl.a dist/ffi/lib/libresl.a || true
+          New-Item -ItemType Directory -Force -Path "$env:FFI_DIR\lib" | Out-Null
+          New-Item -ItemType Directory -Force -Path "$env:FFI_DIR\include" | Out-Null
+          Copy-Item "include\resl.h" "$env:FFI_DIR\include\" -Force
 
-      - name: Copy FFI library files (Windows)
-        if: contains(matrix.target, 'windows')
+      - name: Copy FFI library (Linux)
+        if: contains(env.TARGET, 'linux')
         shell: bash
         run: |
-          cp target/${{ matrix.target }}/release/libresl.dll dist/ffi/lib/ || true
-          cp target/${{ matrix.target }}/release/libresl.dll.lib dist/ffi/lib/libresl.lib || true
-          cp target/${{ matrix.target }}/release/libresl.dll.exp dist/ffi/lib/ || true
+          cp target/$TARGET/release/liblibresl.so $FFI_DIR/lib/libresl.so || true
+          cp target/$TARGET/release/liblibresl.a $FFI_DIR/lib/libresl.a || true
 
-      - name: Copy FFI library files (macOS)
-        if: contains(matrix.target, 'apple')
+      - name: Copy FFI library (Windows)
+        if: contains(env.TARGET, 'windows')
+        shell: pwsh
         run: |
-          cp target/${{ matrix.target }}/release/liblibresl.dylib dist/ffi/lib/libresl.dylib
-          cp target/${{ matrix.target }}/release/liblibresl.a dist/ffi/lib/libresl.a || true
+          Copy-Item "target\$env:TARGET\release\libresl.dll" "$env:FFI_DIR\lib\" -Force -ErrorAction SilentlyContinue
+          Copy-Item "target\$env:TARGET\release\libresl.lib" "$env:FFI_DIR\lib\" -Force -ErrorAction SilentlyContinue
+          Copy-Item "target\$env:TARGET\release\libresl.exp" "$env:FFI_DIR\lib\" -Force -ErrorAction SilentlyContinue
 
-      - name: Copy headers
-        run: |
-          cp include/resl.h dist/ffi/include/
-
-      - name: Create FFI archive
+      - name: Copy FFI library (macOS)
+        if: contains(env.TARGET, 'apple')
         shell: bash
         run: |
-          cd dist/ffi
-          if [[ "${{ matrix.target }}" == *"windows"* ]]; then
-            zip -r ../../libresl-${{ needs.release-please.outputs.tag_name }}-${{ matrix.target }}.zip .
-          else
-            tar -czf ../../libresl-${{ needs.release-please.outputs.tag_name }}-${{ matrix.target }}.tar.gz .
-          fi
+          cp target/$TARGET/release/liblibresl.dylib $FFI_DIR/lib/libresl.dylib || true
+          cp target/$TARGET/release/liblibresl.a $FFI_DIR/lib/libresl.a || true
 
-      - name: Upload FFI archive
+      - name: Create FFI library archive (Linux/macOS)
+        if: contains(env.TARGET, 'windows') == false
+        shell: bash
+        run: |
+          tar -czf $FFI_DIR/libresl-${TAG_NAME}-${TARGET}.tar.gz -C $FFI_DIR .
+
+      - name: Create FFI library archive (Windows)
+        if: contains(env.TARGET, 'windows')
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "$env:FFI_DIR\*" -DestinationPath "$env:FFI_DIR\libresl-$env:TAG_NAME-$env:TARGET.zip" -Force
+
+      - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          tag_name: ${{ env.TAG_NAME }}
           files: |
-            libresl-${{ needs.release-please.outputs.tag_name }}-${{ matrix.target }}.*
+            dist/cli/resl-${{ env.TAG_NAME }}-${{ env.TARGET }}*
+            dist/ffi/libresl-${{ env.TAG_NAME }}-${{ env.TARGET }}*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-crates:
-    name: Publish to crates.io
-    needs: [release-please, upload-assets]
+    name: Publish Crates
+    needs: [release-please, release-assets]
     if: ${{ needs.release-please.outputs.release_created }}
     runs-on: ubuntu-latest
     steps:
@@ -146,8 +167,8 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
   publish-docs:
-    name: Trigger documentation publish
-    needs: [release-please, upload-assets, publish-crates]
+    name: Publish Documentation
+    needs: [release-please, release-assets, publish-crates]
     if: ${{ needs.release-please.outputs.release_created }}
     runs-on: ubuntu-latest
     steps:
