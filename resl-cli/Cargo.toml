@@ -1,6 +1,6 @@
 [package]
 name = "resl-cli"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "Command-line interface for RESL - Runtime Evaluated Serialization Language"
 homepage = "https://decipher3114.github.io/resl"
@@ -16,7 +16,7 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1.0.99"
 clap = { version = "4.5.47", features = ["derive"] }
-resl = { path = "../resl", version = "0.1.0", features = ["preserve-order"] }
+resl = { path = "../resl", version = "0.2.0", features = ["preserve-order"] }
 serde = { version = "1.0.224", features = ["derive"] }
 serde_json = "1.0.145"
 toml = "0.9.6"

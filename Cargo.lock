@@ -298,7 +298,7 @@ checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
 
 [[package]]
 name = "resl"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "concat-string",
  "indexmap",
@@ -309,7 +309,7 @@ dependencies = [
 
 [[package]]
 name = "resl-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -322,7 +322,7 @@ dependencies = [
 
 [[package]]
 name = "resl-ffi"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "cbindgen",
  "resl",
