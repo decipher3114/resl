@@ -32,5 +32,8 @@ pub(crate) fn parse(input: &mut StatefulInput) -> ModalResult<Expr> {
 pub(crate) fn parse_plain<'input>(
     input: &mut StatefulInput<'input, '_>,
 ) -> ModalResult<&'input str> {
-    take_while(1.., |c: char| c.is_alphanumeric() || c == '_').parse_next(input)
+    take_while(1.., |c: char| {
+        c.is_alphanumeric() || ['_', '-', '$'].contains(&c)
+    })
+    .parse_next(input)
 }
